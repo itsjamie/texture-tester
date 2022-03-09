@@ -778,7 +778,7 @@ var WebGLTextureUtil = (function() {
           }
 
           if (!self._formatSupported(msg.data.internalFormat)) {
-            clearOnError(self.gl, "Texture format not supported", pt.texture, pt.callback);
+            clearOnError(self.gl, "Texture format not supported: " + msg.data.internalFormat, pt.texture, pt.callback);
             return;
           }
 
@@ -912,7 +912,7 @@ var WebGLTextureUtil = (function() {
           // If the file loaded successfully parse it.
           parseDDS(xhr.response, function(dxtData, width, height, levels, internalFormat) {
             if (!self._formatSupported(internalFormat)) {
-              clearOnError(self.gl, "Texture format not supported", texture, callback);
+              clearOnError(self.gl, "Texture format not supported: " + internalFormat, texture, callback);
               return;
             }
             // Upload the parsed DXT data to the texture.
@@ -940,7 +940,7 @@ var WebGLTextureUtil = (function() {
       }
 
       if (!this.supportsDXT()) {
-        clearOnError(this.gl, "Texture format not supported", texture, callback);
+        clearOnError(this.gl, "Texture format not supported: DXT", texture, callback);
         return texture;
       }
 
@@ -959,7 +959,7 @@ var WebGLTextureUtil = (function() {
             // If the file loaded successfully parse and decompress it.
             decompressCRN(xhr.response, function(dxtData, width, height, levels, internalFormat) {
               if (!self._formatSupported(internalFormat)) {
-                clearOnError(self.gl, "Texture format not supported", texture, callback);
+                clearOnError(self.gl, "Texture format not supported (CRN): " + internalFormat, texture, callback);
                 return;
               }
               // Upload the parsed and decompressed DXT data to the texture.
@@ -994,7 +994,7 @@ var WebGLTextureUtil = (function() {
           // If the file loaded successfully parse it.
           parsePVR(xhr.response, function(dxtData, width, height, levels, internalFormat) {
             if (!self._formatSupported(internalFormat)) {
-              clearOnError(self.gl, "Texture format not supported", texture, callback);
+              clearOnError(self.gl, "Texture format not supported: PVR", texture, callback);
               return;
             }
             // Upload the parsed PVR data to the texture.
