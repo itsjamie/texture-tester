@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  <title>TV Test</title>
+  <script src="js/webgl-util.js"></script>
+  <script src="js/webgl-texture-util.js"></script>
+
+  <script id="default-vs" type="x-shader/x-vertex">
+      precision mediump float;
+
+      attribute vec2 Position;
+      attribute vec2 TexCoord;
+
+      varying vec2 vTexCoord;
+  
+      void main(void) {
+        vTexCoord = TexCoord;
+        gl_Position = vec4(Position, 1.0, 1.0);
+      }
+    </script>
+
+  <script id="default-fs" type="x-shader/x-fragment">
+      precision mediump float;
+      
+      varying vec2 vTexCoord;
+      uniform sampler2D diffuse;
+
+      void main(void) {
+        gl_FragColor = texture2D(diffuse, vTexCoord);
+      }
+    </script>
+</head>
+
+<body>
+
+  <section id="header">
+    <h1>TV Test</h1>
+    <p>
+      This page attempts to load a compressed texture indicated by the query parameters.
+      It is intended to quickly test which format the browser and device combination is supported on devices with odd
+      control schemes.
+    </p>
+    <p>
+      Loads "url" and "format" query parameters.
+    </p>
+    <ul>
+      <li>Texture URL: <span id="url"></span></li>
+      <li>Format: <span id="format"></span></li>
+    </ul>
+  </section>
+
+  <canvas id="canvas"></canvas>
+
+  <script>
+    var params = new URL(location.href).searchParams
+    var textureSrc = params.get("url");
+    document.getElementById('url').innerText = textureSrc;
+    var textureFormat = params.get("format");
+    document.getElementById('format').innerText = textureFormat;
+    var canvas = document.getElementById("canvas");
+    canvas.width = 1920;
+    canvas.height = 1080;
+
+    var gl = WebGLUtil.getContext(canvas);
+    if (gl) {
+      var textureUtil = new WebGLTextureUtil(gl, true);
+      var shader = WebGLUtil.createProgramFromTags(gl, "#default-vs", "#default-fs");
+      gl.useProgram(shader.program);
+      gl.clearColor(0.0, 0.0, 0.0, 1.0);
+
+      var quadBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        -1, 1, 0, 0,
+        1, 1, 1, 0,
+        1, -1, 1, 1,
+
+        -1, 1, 0, 0,
+        1, -1, 1, 1,
+        -1, -1, 0, 1,
+      ]), gl.STATIC_DRAW);
+
+      gl.enableVertexAttribArray(shader.attribute.Position);
+      gl.enableVertexAttribArray(shader.attribute.TexCoord);
+      gl.vertexAttribPointer(shader.attribute.Position, 2, gl.FLOAT, false, 16, 0);
+      gl.vertexAttribPointer(shader.attribute.TexCoord, 2, gl.FLOAT, false, 16, 8);
+
+      gl.uniform1i(shader.uniform.diffuse, 0);
+
+      textureUtil.loadTexture(textureSrc, null, function (texture, error, stats) {
+        console.log(stats)
+        if (!error) {
+          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+          gl.bindTexture(gl.TEXTURE_2D, texture);
+          gl.drawArrays(gl.TRIANGLES, 0, 6);
+        } else {
+          console.error(error)
+        }
+      });
+    }
+  </script>
+</body>
+
+</html>
